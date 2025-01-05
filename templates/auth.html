@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập & Đăng ký</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('../images/anhnenao.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        input:focus {
+            border-color: #1877f2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background-color: #1664d9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(24, 119, 242, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .toggle-form a {
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-form a:hover {
+            color: #1664d9;
+            text-decoration: underline;
+        }
+
+        h2 {
+            color: #1877f2;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .form {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .form.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Hiệu ứng placeholder */
+        input::placeholder {
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        input:focus::placeholder {
+            color: #bbb;
+        }
+
+        /* Hiệu ứng validation */
+        input:invalid {
+            border-color: #0707071c;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            input {
+                font-size: 0.95rem;
+            }
+
+            button {
+                padding: 0.8rem;
+            }
+        }
+
+        /* Kiểm tra các thuộc tính display hoặc visibility */
+        .form-signup {
+            display: none;
+        }
+
+        .form-signup.active {
+            display: block;
+        }
+
+        #registerForm {
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            padding: 20px;
+            display: none;
+        }
+
+        #registerForm.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Đăng nhập -->
+        <form id="loginForm" class="form active">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">Đăng nhập</h2>
+            <div class="form-group">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Mật khẩu:</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button type="submit">Đăng nhập</button>
+            <div class="toggle-form">
+                <a href="#" onclick="toggleForm('register')">Chưa có tài khoản? Đăng ký ngay</a>
+            </div>
+        </form>
+
+        <!-- Form Đăng ký -->
+        <form id="registerForm" class="form-signup">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">Đăng ký</h2>
+            <div class="form-group">
+                <label for="registerEmail">Email:</label>
+                <input type="email" id="registerEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="fullName">Họ và tên:</label>
+                <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại:</label>
+                <input type="tel" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Mật khẩu:</label>
+                <input type="password" id="registerPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Nhập lại mật khẩu:</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit">Đăng ký</button>
+            <div class="toggle-form">
+                <a href="#" onclick="toggleForm('login')">Đã có tài khoản? Đăng nhập ngay</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Xử lý form đăng nhập
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Thêm logic xác thực đăng nhập ở đây
+            // Giả lập đăng nhập thành công
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userEmail', email);
+            
+            // Chuyển hướng về trang chủ sau khi đăng nhập thành công
+            window.location.href = '../index.html';
+        });
+
+        // Xử lý form đăng ký
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('registerPassword').value;
+
+            // Thêm logic xử lý đăng ký ở đây
+            // Giả lập đăng ký thành công
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userName', fullName);
+
+            // Chuyển hướng về trang chủ sau khi đăng ký thành công
+            window.location.href = '../index.html';
+        });
+
+        // Xử lý chuyển đổi form
+        function toggleForm(formType) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (formType === 'login') {
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+            } else {
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+            }
+        }
+
+        // Kiểm tra hash URL để hiển thị form tương ứng
+        window.onload = function() {
+            if (window.location.hash === '#register') {
+                toggleForm('#register');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const registerLink = document.querySelector('.register-link');
+
+            registerLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Ẩn form đăng nhập
+                loginForm.style.display = 'none';
+                // Hiển thị form đăng ký
+                registerForm.style.display = 'block';
+                
+                // Hoặc sử dụng classList
+                // loginForm.classList.remove('active');
+                // registerForm.classList.add('active');
+                
+                console.log('Switching to register form'); // Debug log
+            });
+        });
+    </script>
+</body>
+</html>
