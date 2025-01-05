@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo và Thống kê</title>
+    
+    <!-- Đảm bảo thứ tự load script đúng -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="../js/dataManager.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* Styles cho navbar */
+        .navbar {
+            background-color: #1877f2;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.15);
+        }
+
+        /* Desktop lớn (1200px trở lên) */
+        @media (min-width: 1200px) {
+            .navbar {
+                padding: 1rem 3rem;
+            }
+
+            .nav-left {
+                gap: 1.5rem;
+            }
+
+            .nav-item {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        /* Desktop và Laptop (992px - 1199px) */
+        @media (max-width: 1199px) {
+            .nav-left {
+                gap: 1rem;
+            }
+
+            .nav-item {
+                font-size: 0.95rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        /* Tablet lớn và Desktop nhỏ (768px - 991px) */
+        @media (max-width: 991px) {
+            .navbar {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .nav-left {
+                gap: 0.8rem;
+            }
+
+            .nav-item {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.7rem;
+            }
+        }
+
+        /* Tablet (576px - 767px) */
+        @media (max-width: 767px) {
+            .navbar {
+                flex-direction: column;
+                padding: 0.5rem;
+            }
+
+            .nav-left {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-bottom: 0.8rem;
+                width: 100%;
+            }
+
+            .nav-right {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .nav-item {
+                font-size: 0.85rem;
+                padding: 0.3rem 0.6rem;
+            }
+
+            .auth-buttons {
+                gap: 0.8rem;
+            }
+        }
+
+        /* Mobile lớn (375px - 575px) */
+        @media (max-width: 575px) {
+            .navbar {
+                padding: 0.4rem;
+            }
+
+            .nav-left {
+                gap: 0.4rem;
+            }
+
+            .nav-item {
+                font-size: 0.8rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            .auth-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .auth-btn {
+                width: 100%;
+                text-align: center;
+                padding: 0.5rem;
+            }
+
+            .notification-icon {
+                font-size: 1rem;
+            }
+        }
+
+        /* Mobile nhỏ (dưới 375px) */
+        @media (max-width: 374px) {
+            .navbar {
+                padding: 0.3rem;
+            }
+
+            .nav-left {
+                gap: 0.3rem;
+            }
+
+            .nav-item {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .auth-buttons {
+                gap: 0.4rem;
+            }
+
+            .auth-btn {
+                padding: 0.4rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Điều chỉnh cho thiết bị có thể gập/xoay */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .navbar {
+                padding: 0.4rem 1rem;
+            }
+
+            .nav-left {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            .nav-left::-webkit-scrollbar {
+                display: none;
+            }
+
+            .nav-item {
+                white-space: nowrap;
+            }
+        }
+
+        /* Điều chỉnh cho màn hình retina */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .nav-item {
+                text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            }
+        }
+
+        /* Statistics specific styles */
+        .statistics-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .expense-table th,
+        .expense-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .expense-table th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .category-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            background: #1877f2;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #1877f2;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Styles cho notification */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.3rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 1px 5px;
+            font-size: 0.7rem;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notifications-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            width: 300px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notifications-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #202020;
+        }
+
+        .dropdown-notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dropdown-notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .dropdown-notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-weight: 500;
+            color: #ff000096;
+            text-shadow: 0 1px 2px rgba(255, 8, 8, 0.479);
+        }
+
+        .notification-content span {
+            color: #000000;
+            font-size: 0.9rem;
+        }
+
+        /* Styles cho auth buttons */
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .register-btn {
+            background-color: white;
+            color: #1877f2;
+        }
+
+        /* Styles cho avatar và logout */
+        .avatar-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 0.3rem;
+            margin-top: 0.3rem;
+            min-width: 120px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .logout-dropdown.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .logout-btn {
+            color: #333;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        /* Thêm hover effects */
+        .auth-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .notification-icon:hover {
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Copy navbar structure from index.html -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="nav-item">Trang chủ</a>
+            <a href="./transaction.html" class="nav-item">Quản lý Giao dịch</a>
+            <a href="./budget.html" class="nav-item">Quản lý Ngân sách</a>
+            <a href="./statistics.html" class="nav-item">Báo cáo và Thống kê</a>
+            <a href="#" class="nav-item">Quản lý Tài khoản Ngân hàng</a>
+            <a href="#" class="nav-item">Cài đặt</a>
+        </div>
+        
+        <div class="nav-right" id="navRight">
+            <!-- Thêm thông báo -->
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                    </div>
+                    <div class="dropdown-notification-list">
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Hóa đơn tiền điện sắp đến hạn</p>
+                                <span>Đến hạn trong 3 ngày</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Chi tiêu ăn uống vượt ngân sách</p>
+                                <span>Đã vượt 15% ngân sách tháng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thêm nút đăng nhập/đăng ký -->
+            <div class="auth-buttons" id="authButtons">
+                <a href="auth.html" class="auth-btn login-btn">Đăng nhập</a>
+                <a href="auth.html#register" class="auth-btn register-btn">Đăng ký</a>
+            </div>
+
+            <!-- Thêm avatar và dropdown đăng xuất -->
+            <div class="user-info" id="userInfo" style="display: none;">
+                <div class="avatar-container">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" class="avatar" onclick="toggleLogout()">
+                    <div class="logout-dropdown" id="logoutDropdown">
+                        <a href="#" class="logout-btn" onclick="logout()">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="statistics-container">
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2 class="chart-title">Thu nhập và Chi tiêu theo tháng</h2>
+                <div class="chart-filters">
+                    <select class="filter-select" id="yearFilter">
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2 class="chart-title">Xu hướng Tài chính</h2>
+                <div class="chart-filters">
+                    <select class="filter-select" id="trendPeriod">
+                        <option value="6">6 tháng gần nhất</option>
+                        <option value="12">12 tháng gần nhất</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2 class="chart-title">Chi tiết Chi tiêu theo Danh mục</h2>
+                <div class="chart-filters">
+                    <select class="filter-select" id="monthFilter">
+                        <!-- Will be populated with JavaScript -->
+                    </select>
+                </div>
+            </div>
+            <table class="expense-table" id="categoryTable">
+                <thead>
+                    <tr>
+                        <th>Danh mục</th>
+                        <th>Số tiền</th>
+                        <th>% Ngân sách</th>
+                        <th>Tiến độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Will be populated with JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Kiểm tra đăng nhập và khởi tạo dữ liệu
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // Format tiền tệ
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Lấy tên danh mục
+        function getCategoryName(categoryId) {
+            return DataManager.categories.getName(categoryId);
+        }
+
+        // Thêm hàm để lấy dữ liệu giao dịch từ localStorage
+        function getTransactionData() {
+            return DataManager.transactions.getAll();
+        }
+
+        // Thêm hàm để lấy dữ liệu ngân sách từ localStorage
+        function getBudgetData() {
+            return DataManager.budgets.getAll();
+        }
+
+        // Cập nhật hàm khởi tạo biểu đồ thu chi theo tháng
+        function initMonthlyChart() {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+                    datasets: [
+                        {
+                            label: 'Thu nhập',
+                            backgroundColor: '#36A2EB',
+                            data: Array(12).fill(0)
+                        },
+                        {
+                            label: 'Chi tiêu',
+                            backgroundColor: '#FF6384',
+                            data: Array(12).fill(0)
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            return monthlyChart;
+        }
+
+        // Cập nhật hàm khởi tạo biểu đồ xu hướng
+        function initTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            const trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Số dư',
+                        borderColor: '#4BC0C0',
+                        data: [],
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Số dư: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            return trendChart;
+        }
+
+        // Cập nhật hàm updateMonthlyChart
+        function updateMonthlyChart(year, chart) {
+            console.log('Updating monthly chart for year:', year);
+            const monthlyData = {
+                income: Array(12).fill(0),
+                expense: Array(12).fill(0)
+            };
+
+            try {
+                const transactions = DataManager.transactions.getAll();
+                console.log('Retrieved transactions:', transactions);
+
+                if (!Array.isArray(transactions)) {
+                    throw new Error('Invalid transactions data format');
+                }
+
+                transactions.forEach(transaction => {
+                    if (!transaction.date || !transaction.amount || !transaction.type) {
+                        console.warn('Invalid transaction:', transaction);
+                        return;
+                    }
+
+                    const transactionDate = new Date(transaction.date);
+                    if (transactionDate.getFullYear() === parseInt(year)) {
+                        const month = transactionDate.getMonth();
+                        const amount = parseFloat(transaction.amount) || 0;
+                        
+                        if (transaction.type === 'income') {
+                            monthlyData.income[month] += amount;
+                        } else if (transaction.type === 'expense') {
+                            monthlyData.expense[month] += amount;
+                        }
+                    }
+                });
+
+                if (validateChartData(monthlyData.income) && validateChartData(monthlyData.expense)) {
+                    chart.data.datasets[0].data = monthlyData.income;
+                    chart.data.datasets[1].data = monthlyData.expense;
+                    chart.update();
+                }
+            } catch (error) {
+                console.error('Error in updateMonthlyChart:', error);
+            }
+        }
+
+        // Cập nhật hàm updateTrendChart
+        function updateTrendChart(months, chart) {
+            const transactions = getTransactionData();
+            const today = new Date();
+            const labels = [];
+            const balanceData = [];
+            let runningBalance = 0;
+
+            // Tạo nhãn cho các tháng
+            for (let i = months - 1; i >= 0; i--) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                labels.push(date.toLocaleDateString('vi-VN', { month: 'short', year: 'numeric' }));
+            }
+
+            // Tính toán số dư tích lũy
+            const sortedTransactions = transactions
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            labels.forEach((_, index) => {
+                const monthStart = new Date(today.getFullYear(), today.getMonth() - (months - 1 - index), 1);
+                const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+
+                const monthTransactions = sortedTransactions.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate >= monthStart && tDate <= monthEnd;
+                });
+
+                monthTransactions.forEach(t => {
+                    if (t.type === 'income') {
+                        runningBalance += parseFloat(t.amount);
+                    } else if (t.type === 'expense') {
+                        runningBalance -= Math.abs(parseFloat(t.amount));
+                    }
+                });
+
+                balanceData.push(runningBalance);
+            });
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = balanceData;
+            chart.update();
+        }
+
+        // Cập nhật hàm updateCategoryTable
+        function updateCategoryTable(month) {
+            console.log('Updating category table for month:', month);
+            
+            // Lấy dữ liệu
+            const expenses = DataManager.calculations.getCategoryExpenses(month);
+            const budgets = DataManager.budgets.getAll();
+            console.log('Category expenses:', expenses);
+            console.log('Budgets:', budgets);
+
+            // Cập nhật bảng
+            const tbody = document.querySelector('#categoryTable tbody');
+            tbody.innerHTML = '';
+
+            Object.entries(expenses)
+                .sort(([, a], [, b]) => b - a)
+                .forEach(([category, amount]) => {
+                    const budget = budgets.find(b => 
+                        b.category === category && 
+                        b.month === month
+                    );
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="category-name">
+                                <div class="category-icon">
+                                    <i class="fas fa-${DataManager.categories.getIcon(category)}"></i>
+                                </div>
+                                ${DataManager.categories.getName(category)}
+                            </div>
+                        </td>
+                        <td>${formatCurrency(amount)}</td>
+                        <td>${budget ? ((amount / parseFloat(budget.amount)) * 100).toFixed(1) + '%' : 'N/A'}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${budget ? Math.min((amount / parseFloat(budget.amount)) * 100, 100) : 0}%"></div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+        }
+
+        // Thêm event listener cho các thay đổi dữ liệu
+        window.addEventListener('dataChanged', function(e) {
+            const monthlyChart = Chart.getChart('monthlyChart');
+            const trendChart = Chart.getChart('trendChart');
+            
+            if (monthlyChart && trendChart) {
+                const yearFilter = document.getElementById('yearFilter');
+                const trendPeriod = document.getElementById('trendPeriod');
+                const monthFilter = document.getElementById('monthFilter');
+
+                updateMonthlyChart(yearFilter.value, monthlyChart);
+                updateTrendChart(parseInt(trendPeriod.value), trendChart);
+                updateCategoryTable(monthFilter.value);
+            }
+        });
+
+        // Thêm hàm kiểm tra và khởi tạo dữ liệu
+        function initializeData() {
+            const validation = DataManager.validateData();
+            console.log('Data validation results:', validation);
+
+            if (!validation.hasTransactions) {
+                console.log('No transactions found, charts may be empty');
+            }
+
+            if (!validation.hasBudgets) {
+                console.log('No budgets found, budget comparisons may be unavailable');
+            }
+        }
+
+        // Cập nhật phần khởi tạo trang
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing charts...');
+            
+            initializeData();
+            const monthlyChart = initMonthlyChart();
+            const trendChart = initTrendChart();
+
+            // Khởi tạo giá trị mặc định cho các filter
+            const currentDate = new Date();
+            const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
+            
+            yearFilter.value = currentDate.getFullYear().toString();
+            monthFilter.value = currentDate.toISOString().slice(0, 7);
+
+            // Cập nhật dữ liệu ban đầu
+            updateMonthlyChart(yearFilter.value, monthlyChart);
+            updateTrendChart(6, trendChart);
+            updateCategoryTable(monthFilter.value);
+
+            // Thêm event listeners
+            yearFilter.addEventListener('change', () => {
+                console.log('Year changed to:', yearFilter.value);
+                updateMonthlyChart(yearFilter.value, monthlyChart);
+            });
+
+            monthFilter.addEventListener('change', () => {
+                console.log('Month changed to:', monthFilter.value);
+                updateCategoryTable(monthFilter.value);
+            });
+        });
+
+        // Toggle notifications dropdown
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Toggle logout dropdown
+        function toggleLogout() {
+            document.getElementById('logoutDropdown').classList.toggle('active');
+        }
+
+        // Xử lý đăng xuất
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            window.location.href = 'auth.html';
+        }
+
+        // Cập nhật hiển thị navbar
+        function updateNavbar() {
+            const authButtons = document.getElementById('authButtons');
+            const userInfo = document.getElementById('userInfo');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            
+            if (isLoggedIn) {
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Click bên ngoài để đóng dropdowns
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('.avatar')) {
+                const dropdown = document.getElementById('logoutDropdown');
+                if (dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                }
+            }
+            
+            const notificationIcon = document.querySelector('.notification-icon');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            if (!notificationIcon.contains(e.target) && notificationsDropdown.classList.contains('active')) {
+                notificationsDropdown.classList.remove('active');
+            }
+        });
+
+        // Khởi tạo navbar khi tải trang
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNavbar();
+        });
+
+        function initializeCharts() {
+            console.log('Initializing charts...');
+            
+            // Debug current data state
+            DataManager.debug();
+            
+            const monthlyChart = initMonthlyChart();
+            const trendChart = initTrendChart();
+
+            // Khởi tạo giá trị mặc định cho các filter
+            const currentDate = new Date();
+            const yearFilter = document.getElementById('yearFilter');
+            const monthFilter = document.getElementById('monthFilter');
+            
+            yearFilter.value = currentDate.getFullYear().toString();
+            monthFilter.value = currentDate.toISOString().slice(0, 7);
+
+            console.log('Initial filter values:', {
+                year: yearFilter.value,
+                month: monthFilter.value
+            });
+
+            // Cập nhật dữ liệu ban đầu
+            try {
+                updateMonthlyChart(yearFilter.value, monthlyChart);
+                updateTrendChart(6, trendChart);
+                updateCategoryTable(monthFilter.value);
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
+
+            return { monthlyChart, trendChart };
+        }
+
+        // Cập nhật event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            
+            const charts = initializeCharts();
+            
+            // Lắng nghe sự kiện thay đổi dữ liệu
+            window.addEventListener('dataChanged', function(e) {
+                console.log('Data changed event received');
+                const yearFilter = document.getElementById('yearFilter');
+                const monthFilter = document.getElementById('monthFilter');
+                
+                try {
+                    updateMonthlyChart(yearFilter.value, charts.monthlyChart);
+                    updateTrendChart(6, charts.trendChart);
+                    updateCategoryTable(monthFilter.value);
+                } catch (error) {
+                    console.error('Error updating charts after data change:', error);
+                }
+            });
+        });
+
+        function validateChartData(data) {
+            if (!data || !Array.isArray(data)) {
+                console.error('Invalid data format:', data);
+                return false;
+            }
+            
+            const hasInvalidValues = data.some(value => 
+                typeof value !== 'number' || isNaN(value)
+            );
+            
+            if (hasInvalidValues) {
+                console.error('Data contains invalid values:', data);
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html> 

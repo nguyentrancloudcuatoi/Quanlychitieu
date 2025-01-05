@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Giao dịch</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="../js/dataManager.js"></script>
     <style>
         /* Import menu styles từ index.html */
         /* Copy các style từ dòng 9-814 của index.html */
@@ -1042,7 +1043,7 @@
             <a href="../index.html" class="main-nav-item">Trang chủ</a>
             <a href="./transaction.html" class="main-nav-item">Quản lý Giao dịch</a>
             <a href="./budget.html" class="main-nav-item">Quản lý Ngân sách</a>
-            <a href="#" class="main-nav-item">Báo cáo và Thống kê</a>
+            <a href="./statistics.html" class="main-nav-item">Báo cáo và Thống kê</a>
             <a href="#" class="main-nav-item">Quản lý Tài khoản Ngân hàng</a>
             <a href="#" class="main-nav-item">Cài đặt</a>
         </div>
@@ -1664,6 +1665,19 @@
             window.dispatchEvent(new Event('storage'));
             
             closeEditModal();
+            renderTransactions();
+        }
+
+        function handleTransactionSubmit(event) {
+            event.preventDefault();
+            const transaction = {
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                note: document.getElementById('note').value
+            };
+            DataManager.transactions.add(transaction);
             renderTransactions();
         }
     </script>
