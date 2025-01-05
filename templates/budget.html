@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Ngân sách</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .navbar {
+            background-color: #1877f2;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .budget-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .budget-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .budget-title {
+            font-size: 1.5rem;
+            color: #1877f2;
+            margin-bottom: 1rem;
+        }
+
+        .budget-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #444;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1664d9;
+        }
+
+        .budget-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .budget-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .budget-card h3 {
+            color: #444;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #1877f2;
+            transition: width 0.3s ease;
+        }
+
+        .warning {
+            background-color: #ffc107;
+        }
+
+        .danger {
+            background-color: #dc3545;
+        }
+
+        .budget-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            color: #666;
+        }
+
+        .budget-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 0.3rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            background-color: #dc3545;
+            color: white;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .budget-form {
+                grid-template-columns: 1fr;
+            }
+
+            .budget-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Styles cho navigation */
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.3rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 1px 5px;
+            font-size: 0.7rem;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notifications-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            width: 300px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notifications-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #202020;
+        }
+
+        .dropdown-notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+            color: #ff0000;
+            text-shadow: 0 1px 2px rgba(255, 0, 0, 0.727);
+        }
+
+        .dropdown-notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .dropdown-notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .register-btn {
+            background-color: white;
+            color: #1877f2;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .avatar-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 0.3rem;
+            margin-top: 0.3rem;
+            min-width: 120px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .logout-dropdown.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .logout-btn {
+            color: #333;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        /* Responsive styles cho navigation */
+        @media (max-width: 768px) {
+            .nav-right {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .auth-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .auth-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .notifications-dropdown {
+                width: 280px;
+                right: -100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notifications-dropdown {
+                width: 250px;
+                right: -50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="nav-item">Trang chủ</a>
+            <a href="transaction.html" class="nav-item">Quản lý Giao dịch</a>
+            <a href="budget.html" class="nav-item">Quản lý Ngân sách</a>
+            <a href="#" class="nav-item">Báo cáo và Thống kê</a>
+            <a href="#" class="nav-item">Quản lý Tài khoản Ngân hàng</a>
+            <a href="#" class="nav-item">Cài đặt</a>
+        </div>
+        
+        <div class="nav-right" id="navRight">
+            <!-- Hiển thị thông báo (luôn hiển thị) -->
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                    </div>
+                    <div class="dropdown-notification-list">
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Hóa đơn tiền điện sắp đến hạn</p>
+                                <span>Đến hạn trong 3 ngày</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Chi tiêu ăn uống vượt ngân sách</p>
+                                <span>Đã vượt 15% ngân sách tháng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hiển thị khi chưa đăng nhập -->
+            <div class="auth-buttons" id="authButtons">
+                <a href="auth.html" class="auth-btn login-btn">Đăng nhập</a>
+                <a href="auth.html#register" class="auth-btn register-btn">Đăng ký</a>
+            </div>
+
+            <!-- Hiển thị avatar khi đã đăng nhập -->
+            <div class="user-info" id="userInfo" style="display: none;">
+                <div class="avatar-container">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" class="avatar" onclick="toggleLogout()">
+                    <div class="logout-dropdown" id="logoutDropdown">
+                        <a href="#" class="logout-btn" onclick="logout()">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="budget-container">
+        <div class="budget-header">
+            <h2 class="budget-title">Thiết lập Ngân sách</h2>
+            <form id="budgetForm" class="budget-form">
+                <div class="form-group">
+                    <label for="category">Danh mục</label>
+                    <select id="category" required>
+                        <option value="food">Ăn uống</option>
+                        <option value="transport">Di chuyển</option>
+                        <option value="shopping">Mua sắm</option>
+                        <option value="bills">Hóa đơn</option>
+                        <option value="entertainment">Giải trí</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Số tiền (VNĐ)</label>
+                    <input type="number" id="amount" required min="0">
+                </div>
+                <div class="form-group">
+                    <label for="month">Tháng</label>
+                    <input type="month" id="month" required>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="submit-btn">Thiết lập Ngân sách</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="budgetList" class="budget-list">
+            <!-- Budget cards will be rendered here -->
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Khởi tạo dữ liệu
+        let budgetData = JSON.parse(localStorage.getItem('budgetData')) || {
+            budgets: []
+        };
+
+        // Lấy dữ liệu giao dịch từ localStorage
+        const userData = JSON.parse(localStorage.getItem('userData')) || { transactions: [] };
+
+        // Hàm format tiền tệ
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Hàm lấy tên danh mục
+        function getCategoryName(categoryId) {
+            const categories = {
+                'food': 'Ăn uống',
+                'transport': 'Di chuyển',
+                'shopping': 'Mua sắm',
+                'bills': 'Hóa đơn',
+                'entertainment': 'Giải trí',
+                'other': 'Khác'
+            };
+            return categories[categoryId] || categoryId;
+        }
+
+        // Hàm tính tổng chi tiêu theo danh mục và tháng
+        function calculateExpenses(category, month) {
+            return userData.transactions
+                .filter(t => t.type === 'expense' && 
+                           t.category === category && 
+                           t.date.startsWith(month))
+                .reduce((sum, t) => sum + t.amount, 0);
+        }
+
+        // Hàm render danh sách ngân sách
+        function renderBudgets() {
+            const budgetList = document.getElementById('budgetList');
+            budgetList.innerHTML = '';
+
+            budgetData.budgets.forEach((budget, index) => {
+                const spent = calculateExpenses(budget.category, budget.month);
+                const percentage = (spent / budget.amount) * 100;
+                const remaining = budget.amount - spent;
+
+                let progressClass = '';
+                if (percentage >= 90) {
+                    progressClass = 'danger';
+                } else if (percentage >= 70) {
+                    progressClass = 'warning';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'budget-card';
+                card.innerHTML = `
+                    <h3>${getCategoryName(budget.category)} - ${budget.month}</h3>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress ${progressClass}" 
+                                 style="width: ${Math.min(percentage, 100)}%"></div>
+                        </div>
+                    </div>
+                    <div class="budget-info">
+                        <span>Đã chi: ${formatCurrency(spent)}</span>
+                        <span>Còn lại: ${formatCurrency(remaining)}</span>
+                    </div>
+                    <div class="budget-info">
+                        <span>Ngân sách: ${formatCurrency(budget.amount)}</span>
+                        <span>${percentage.toFixed(1)}%</span>
+                    </div>
+                    <div class="budget-actions">
+                        <button class="edit-btn" onclick="editBudget(${index})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="delete-btn" onclick="deleteBudget(${index})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                `;
+
+                // Hiển thị cảnh báo nếu vượt ngân sách
+                if (percentage >= 90) {
+                    showNotification(`Cảnh báo: ${getCategoryName(budget.category)} đã sử dụng ${percentage.toFixed(1)}% ngân sách`);
+                }
+
+                budgetList.appendChild(card);
+            });
+        }
+
+        // Xử lý form submit
+        document.getElementById('budgetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const category = document.getElementById('category').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const month = document.getElementById('month').value;
+
+            // Kiểm tra xem đã có ngân sách cho danh mục và tháng này chưa
+            const existingIndex = budgetData.budgets.findIndex(
+                b => b.category === category && b.month === month
+            );
+
+            if (existingIndex >= 0) {
+                budgetData.budgets[existingIndex].amount = amount;
+            } else {
+                budgetData.budgets.push({ category, amount, month });
+            }
+
+            localStorage.setItem('budgetData', JSON.stringify(budgetData));
+            renderBudgets();
+            this.reset();
+        });
+
+        // Hàm xóa ngân sách
+        function deleteBudget(index) {
+            if (confirm('Bạn có chắc chắn muốn xóa ngân sách này?')) {
+                budgetData.budgets.splice(index, 1);
+                localStorage.setItem('budgetData', JSON.stringify(budgetData));
+                renderBudgets();
+            }
+        }
+
+        // Hàm chỉnh sửa ngân sách
+        function editBudget(index) {
+            const budget = budgetData.budgets[index];
+            document.getElementById('category').value = budget.category;
+            document.getElementById('amount').value = budget.amount;
+            document.getElementById('month').value = budget.month;
+        }
+
+        // Hàm hiển thị thông báo
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Thiết lập giá trị mặc định cho input tháng
+        document.getElementById('month').value = new Date().toISOString().slice(0, 7);
+
+        // Render ngân sách khi tải trang
+        renderBudgets();
+
+        // Lắng nghe sự thay đổi trong localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'userData') {
+                renderBudgets();
+            }
+        });
+
+        // Kiểm tra trạng thái đăng nhập khi tải trang
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                window.location.href = 'auth.html';
+            } else {
+                updateNavbar();
+            }
+        }
+
+        // Cập nhật hiển thị navbar
+        function updateNavbar() {
+            const authButtons = document.getElementById('authButtons');
+            const userInfo = document.getElementById('userInfo');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            
+            if (isLoggedIn) {
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Xử lý đăng xuất
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            window.location.href = 'auth.html';
+        }
+
+        // Toggle logout dropdown
+        function toggleLogout() {
+            document.getElementById('logoutDropdown').classList.toggle('active');
+        }
+
+        // Toggle notifications dropdown
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Click bên ngoài để đóng dropdowns
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('.avatar')) {
+                const logoutDropdown = document.getElementById('logoutDropdown');
+                if (logoutDropdown.classList.contains('active')) {
+                    logoutDropdown.classList.remove('active');
+                }
+            }
+            
+            const notificationIcon = document.querySelector('.notification-icon');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            if (!notificationIcon.contains(e.target) && notificationsDropdown.classList.contains('active')) {
+                notificationsDropdown.classList.remove('active');
+            }
+        });
+
+        // Ngăn chặn sự kiện click trong dropdown lan ra ngoài
+        document.querySelector('.notifications-dropdown').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Kiểm tra đăng nhập khi tải trang
+        window.onload = function() {
+            checkLoginStatus();
+            // Gọi các hàm khởi tạo khác nếu cần
+            renderBudgets();
+        };
+    </script>
+</body>
+</html> 
