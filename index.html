@@ -914,7 +914,7 @@
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
             if (!isLoggedIn) {
                 // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
-                window.location.href = '../templates/auth.html';
+                window.location.href = './templates/auth.html';
             } else {
                 updateNavbar();
             }
@@ -968,64 +968,135 @@
             }
         });
 
-        // Biểu đồ chi tiêu
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Ăn uống', 'Di chuyển', 'Mua sắm', 'Hóa đơn', 'Giải trí'],
-                datasets: [{
-                    data: [30, 20, 15, 25, 10],
-                    backgroundColor: [
-                        '#FF7B8E',
-                        '#36A2EB',
-                        '#FFCE56',
-                        '#4BC0C0',
-                        '#9966FF'
-                    ],
-                    borderWidth: 0,
-                    spacing: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        align: 'center',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15,
-                            font: {
-                                size: 12
-                            },
-                            generateLabels: function(chart) {
-                                const data = chart.data;
-                                if (data.labels.length && data.datasets.length) {
-                                    return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
-                                        return {
-                                            text: `${label}: ${value}%`,
-                                            fillStyle: data.datasets[0].backgroundColor[i],
-                                            hidden: false,
-                                            index: i,
-                                            lineWidth: 0
-                                        };
-                                    });
-                                }
-                                return [];
+        // Thêm hàm để tính toán và cập nhật số liệu tổng quan
+        function updateDashboardStats() {
+            const transactions = JSON.parse(localStorage.getItem('userData'))?.transactions || [];
+            
+            let totalBalance = 0;
+            let totalIncome = 0;
+            let totalExpense = 0;
+            
+            transactions.forEach(transaction => {
+                if (transaction.type === 'income') {
+                    totalIncome += parseFloat(transaction.amount);
+                    totalBalance += parseFloat(transaction.amount);
+                } else {
+                    totalExpense += parseFloat(transaction.amount);
+                    totalBalance -= parseFloat(transaction.amount);
+                }
+            });
+
+            // Cập nhật hiển thị số liệu
+            document.querySelector('.card:nth-child(1) .amount').textContent = formatCurrency(totalBalance);
+            document.querySelector('.card:nth-child(2) .amount').textContent = formatCurrency(totalIncome);
+            document.querySelector('.card:nth-child(3) .amount').textContent = formatCurrency(totalExpense);
+
+            // Cập nhật biểu đồ
+            updateExpenseChart(transactions);
+        }
+
+        // Hàm cập nhật biểu đồ chi tiêu
+        function updateExpenseChart(transactions) {
+            // Tính toán tổng chi tiêu theo danh mục
+            const expensesByCategory = {};
+            const expenseTransactions = transactions.filter(t => t.type === 'expense');
+            
+            expenseTransactions.forEach(transaction => {
+                if (!expensesByCategory[transaction.category]) {
+                    expensesByCategory[transaction.category] = 0;
+                }
+                expensesByCategory[transaction.category] += parseFloat(transaction.amount);
+            });
+
+            // Tính phần trăm cho mỗi danh mục
+            const totalExpense = Object.values(expensesByCategory).reduce((a, b) => a + b, 0);
+            const categoryData = Object.entries(expensesByCategory).map(([category, amount]) => ({
+                category: getCategoryName(category),
+                percentage: Math.round((amount / totalExpense) * 100)
+            }));
+
+            // Cập nhật dữ liệu biểu đồ
+            expenseChart.data.labels = categoryData.map(item => item.category);
+            expenseChart.data.datasets[0].data = categoryData.map(item => item.percentage);
+            expenseChart.update();
+        }
+
+        // Hàm format tiền tệ
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Hàm lấy tên danh mục
+        function getCategoryName(categoryId) {
+            const categories = {
+                'food': 'Ăn uống',
+                'transport': 'Di chuyển',
+                'shopping': 'Mua sắm',
+                'bills': 'Hóa đơn',
+                'entertainment': 'Giải trí',
+                'salary': 'Lương',
+                'investment': 'Đầu tư',
+                'other': 'Khác'
+            };
+            return categories[categoryId] || categoryId;
+        }
+
+        // Khởi tạo biểu đồ
+        let expenseChart;
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            expenseChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#FF7B8E',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ],
+                        borderWidth: 0,
+                        spacing: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            align: 'center',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 12 }
                             }
                         }
                     },
-                    tooltip: {
-                        enabled: false
-                    }
-                },
-                cutout: '45%',
-                radius: '70%'
+                    cutout: '45%',
+                    radius: '70%'
+                }
+            });
+
+            // Cập nhật số liệu ban đầu
+            updateDashboardStats();
+        });
+
+        // Lắng nghe sự thay đổi trong localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'userData') {
+                updateDashboardStats();
             }
         });
+
+        // Cập nhật dashboard mỗi khi trang được load
+        window.addEventListener('load', updateDashboardStats);
 
         // Toggle notifications dropdown
         function toggleNotifications() {

@@ -1011,6 +1011,28 @@
                 overflow-x: auto;
             }
         }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .page-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        #currentPage {
+            padding: 8px 16px;
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
@@ -1018,7 +1040,7 @@
     <nav class="main-navbar">
         <div class="main-nav-left">
             <a href="../index.html" class="main-nav-item">Trang chủ</a>
-            <a href="./templates/transaction.html" class="main-nav-item">Quản lý Giao dịch</a>
+            <a href="./transaction.html" class="main-nav-item">Quản lý Giao dịch</a>
             <a href="#" class="main-nav-item">Quản lý Ngân sách</a>
             <a href="#" class="main-nav-item">Báo cáo và Thống kê</a>
             <a href="#" class="main-nav-item">Quản lý Tài khoản Ngân hàng</a>
@@ -1051,8 +1073,8 @@
             </div>
 
             <div class="main-auth-buttons" id="authButtons">
-                <a href="auth.html" class="main-auth-btn main-login-btn">Đăng nhập</a>
-                <a href="auth.html#register" class="main-auth-btn main-register-btn">Đăng ký</a>
+                <a href="./templates/auth.html" class="main-auth-btn main-login-btn">Đăng nhập</a>
+                <a href="./templates/auth.html#register" class="main-auth-btn main-register-btn">Đăng ký</a>
             </div>
 
             <div class="main-user-info" id="userInfo" style="display: none;">
@@ -1113,6 +1135,13 @@
                 <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
             </tbody>
         </table>
+        
+        <!-- Thêm phần điều hướng trang -->
+        <div class="pagination">
+            <button id="prevPage" class="page-btn">&laquo; Trang trước</button>
+            <span id="currentPage">Trang 1</span>
+            <button id="nextPage" class="page-btn">Trang sau &raquo;</button>
+        </div>
     </div>
 
     <!-- Modal thêm/sửa giao dịch -->
@@ -1159,12 +1188,12 @@
     </div>
 
     <script>
-                // Kiểm tra trạng thái đăng nhập khi tải trang
-                function checkLoginStatus() {
+        // Kiểm tra trạng thái đăng nhập khi tải trang
+        function checkLoginStatus() {
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
             if (!isLoggedIn) {
-                // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
-                window.location.href = '../templates/auth.html';
+                // Sửa đường dẫn chuyển hướng
+                window.location.href = './auth.html';
             } else {
                 updateNavbar();
             }
@@ -1195,28 +1224,39 @@
         }
 
         // Kiểm tra đăng nhập khi tải trang
-        window.onload = checkLoginStatus;
+        window.onload = function() {
+            checkLoginStatus();
+            createSampleData();
+            updateTotals();
+            renderTransactions();
+        };
 
         // Toggle logout dropdown
         function toggleLogout() {
             document.getElementById('logoutDropdown').classList.toggle('active');
         }
 
-        // Giả lập đăng nhập khi click nút đăng nhập
-        document.querySelector('.login-btn').addEventListener('click', () => {
-            isLoggedIn = true;
-            updateNavbar();
-        });
+        // Toggle notifications dropdown
+        function toggleNotifications() {
+            document.getElementById('notificationsDropdown').classList.toggle('active');
+        }
 
-        // Click bên ngoài để đóng dropdown
+        // Click bên ngoài để đóng dropdowns
         document.addEventListener('click', (e) => {
-            if (!e.target.matches('.avatar')) {
-                const dropdown = document.getElementById('logoutDropdown');
-                if (dropdown.classList.contains('active')) {
-                    dropdown.classList.remove('active');
-                }
+            const notificationIcon = document.querySelector('.main-notification-icon');
+            const notificationDropdown = document.getElementById('notificationsDropdown');
+            const avatar = document.querySelector('.main-avatar');
+            const logoutDropdown = document.getElementById('logoutDropdown');
+            
+            if (!notificationIcon.contains(e.target) && notificationDropdown.classList.contains('active')) {
+                notificationDropdown.classList.remove('active');
+            }
+            
+            if (!avatar.contains(e.target) && logoutDropdown.classList.contains('active')) {
+                logoutDropdown.classList.remove('active');
             }
         });
+
         // Thay đổi cấu trúc dữ liệu và cách lưu trữ
         let userData = JSON.parse(localStorage.getItem('userData')) || {
             transactions: [],
@@ -1250,7 +1290,13 @@
             // Sắp xếp giao dịch theo ngày mới nhất
             filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            filteredTransactions.forEach((transaction, index) => {
+            // Tính toán phân trang
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+            // Render các giao dịch
+            paginatedTransactions.forEach((transaction, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${formatDate(transaction.date)}</td>
@@ -1262,10 +1308,10 @@
                     <td>${transaction.note}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="edit-btn" onclick="editTransaction(${index})">
+                            <button class="edit-btn" onclick="editTransaction(${startIndex + index})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="delete-btn" onclick="deleteTransaction(${index})">
+                            <button class="delete-btn" onclick="deleteTransaction(${startIndex + index})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1273,33 +1319,37 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Cập nhật UI phân trang
+            updatePaginationUI(filteredTransactions.length);
         }
 
-        // Xử lý form thêm/sửa giao dịch
-        document.getElementById('transactionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const transaction = {
-                type: document.getElementById('transactionType').value,
-                amount: Number(document.getElementById('amount').value),
-                category: document.getElementById('category').value,
-                date: document.getElementById('date').value,
-                note: document.getElementById('note').value
+        // Hàm format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Hàm format tiền tệ
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { 
+                style: 'currency', 
+                currency: 'VND' 
+            }).format(amount);
+        }
+
+        // Hàm lấy tên danh mục
+        function getCategoryName(categoryValue) {
+            const categories = {
+                'food': 'Ăn uống',
+                'transport': 'Di chuyển',
+                'shopping': 'Mua sắm',
+                'bills': 'Hóa đơn',
+                'salary': 'Lương',
+                'other': 'Khác'
             };
-
-            if (currentEditIndex === null) {
-                userData.transactions.push(transaction);
-            } else {
-                userData.transactions[currentEditIndex] = transaction;
-            }
-
-            // Cập nhật tổng số
-            updateTotals();
-            
-            // Lưu vào localStorage
-            localStorage.setItem('userData', JSON.stringify(userData));
-            closeModal();
-            renderTransactions();
-        });
+            return categories[categoryValue] || categoryValue;
+        }
 
         // Hàm cập nhật tổng số
         function updateTotals() {
@@ -1314,12 +1364,7 @@
             userData.balance = userData.totalIncome - userData.totalExpense;
         }
 
-        // Thêm hàm format date
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('vi-VN');
-        }
-
+        // Hàm xóa giao dịch
         function deleteTransaction(index) {
             if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
                 userData.transactions.splice(index, 1);
@@ -1334,71 +1379,293 @@
         document.getElementById('toDate').addEventListener('change', renderTransactions);
         document.getElementById('categoryFilter').addEventListener('change', renderTransactions);
 
-        // Khởi tạo trang
-        updateTotals();
-        renderTransactions();
+        // Biến để theo dõi giao dịch đang được chỉnh sửa
+        let editingTransactionIndex = null;
 
-        // Kiểm tra trạng thái đăng nhập khi tải trang
-        function checkLoginStatus() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (!isLoggedIn) {
-                window.location.href = '../templates/auth.html';
+        // Mở modal thêm/sửa giao dịch
+        function openModal(index = null) {
+            console.log('Opening modal, index:', index);
+            const modal = document.getElementById('transactionModal');
+            const form = document.getElementById('transactionForm');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            // Reset form
+            form.reset();
+            
+            // Đặt ngày mặc định là ngày hiện tại
+            document.getElementById('date').valueAsDate = new Date();
+            
+            if (index !== null) {
+                // Chế độ chỉnh sửa
+                const transaction = userData.transactions[index];
+                modalTitle.textContent = 'Chỉnh sửa giao dịch';
+                document.getElementById('transactionType').value = transaction.type;
+                document.getElementById('amount').value = transaction.amount;
+                document.getElementById('category').value = transaction.category;
+                document.getElementById('date').value = transaction.date;
+                document.getElementById('note').value = transaction.note;
+                editingTransactionIndex = index;
             } else {
-                updateNavbar();
+                // Chế độ thêm mới
+                modalTitle.textContent = 'Thêm giao dịch mới';
+                editingTransactionIndex = null;
             }
+            
+            modal.style.display = 'block';
         }
 
-        // Cập nhật hiển thị navbar
-        function updateNavbar() {
-            const authButtons = document.getElementById('authButtons');
-            const userInfo = document.getElementById('userInfo');
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        // Đóng modal
+        function closeModal() {
+            const modal = document.getElementById('transactionModal');
+            modal.style.display = 'none';
+            editingTransactionIndex = null;
+        }
+
+        // Xử lý form submit
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
             
-            if (isLoggedIn) {
-                authButtons.style.display = 'none';
-                userInfo.style.display = 'flex';
+            const transaction = {
+                type: document.getElementById('transactionType').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                note: document.getElementById('note').value
+            };
+
+            if (editingTransactionIndex !== null) {
+                // Cập nhật giao dịch hiện có
+                userData.transactions[editingTransactionIndex] = transaction;
             } else {
-                authButtons.style.display = 'flex';
-                userInfo.style.display = 'none';
+                // Thêm giao dịch mới
+                userData.transactions.push(transaction);
+            }
+
+            // Cập nhật localStorage và giao diện
+            updateTotals();
+            localStorage.setItem('userData', JSON.stringify(userData));
+            renderTransactions();
+            closeModal();
+        });
+
+        // Hàm chỉnh sửa giao dịch
+        function editTransaction(index) {
+            openModal(index);
+        }
+
+        // Đóng modal khi click bên ngoài
+        window.onclick = function(event) {
+            const modal = document.getElementById('transactionModal');
+            if (event.target == modal) {
+                closeModal();
             }
         }
 
-        // Xử lý đăng xuất
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userName');
-            window.location.href = '../templates/auth.html';
-        }
+        // Hàm tạo dữ liệu mẫu
+        function createSampleData() {
+            console.log('Creating sample data...');
+            if (userData.transactions.length === 0) {
+                const sampleTransactions = [
+                    {
+                        type: 'income',
+                        amount: 15000000,
+                        category: 'salary',
+                        date: '2024-03-01',
+                        note: 'Lương tháng 3'
+                    },
+                    {
+                        type: 'expense',
+                        amount: 2500000,
+                        category: 'bills',
+                        date: '2024-03-05',
+                        note: 'Tiền thuê nhà tháng 3'
+                    },
+                    {
+                        type: 'expense',
+                        amount: 850000,
+                        category: 'food',
+                        date: '2024-03-10',
+                        note: 'Đi chợ và ăn uống tuần 1'
+                    },
+                    {
+                        type: 'expense',
+                        amount: 300000,
+                        category: 'transport',
+                        date: '2024-03-12',
+                        note: 'Xăng xe'
+                    },
+                    {
+                        type: 'expense',
+                        amount: 1200000,
+                        category: 'shopping',
+                        date: '2024-03-15',
+                        note: 'Mua quần áo mới'
+                    },
+                    {
+                        type: 'income',
+                        amount: 5000000,
+                        category: 'other',
+                        date: '2024-03-18',
+                        note: 'Tiền thưởng dự án'
+                    }
+                ];
 
-        // Toggle logout dropdown
-        function toggleLogout() {
-            document.getElementById('logoutDropdown').classList.toggle('active');
-        }
-
-        // Toggle notifications dropdown
-        function toggleNotifications() {
-            document.getElementById('notificationsDropdown').classList.toggle('active');
-        }
-
-        // Click bên ngoài để đóng dropdowns
-        document.addEventListener('click', (e) => {
-            const notificationIcon = document.querySelector('.main-notification-icon');
-            const notificationDropdown = document.getElementById('notificationsDropdown');
-            const avatar = document.querySelector('.main-avatar');
-            const logoutDropdown = document.getElementById('logoutDropdown');
-            
-            if (!notificationIcon.contains(e.target) && notificationDropdown.classList.contains('active')) {
-                notificationDropdown.classList.remove('active');
+                userData.transactions = sampleTransactions;
+                updateTotals();
+                localStorage.setItem('userData', JSON.stringify(userData));
+                console.log('Sample data created:', userData.transactions);
+            } else {
+                console.log('Using existing data:', userData.transactions);
             }
+        }
+
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function displayTransactions(transactions) {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedTransactions = transactions.slice(startIndex, endIndex);
             
-            if (!avatar.contains(e.target) && logoutDropdown.classList.contains('active')) {
-                logoutDropdown.classList.remove('active');
+            // Hiển thị transactions cho trang hiện tại
+            const transactionsList = document.getElementById('transactionsList');
+            transactionsList.innerHTML = ''; // Xóa dữ liệu cũ
+            
+            paginatedTransactions.forEach(transaction => {
+                // Logic hiển thị transaction hiện tại
+            });
+            
+            // Cập nhật hiển thị số trang
+            document.getElementById('currentPage').textContent = `Trang ${currentPage}`;
+            
+            // Ẩn/hiện nút điều hướng
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = endIndex >= transactions.length;
+        }
+
+        // Cập nhật lại event listeners cho các nút điều hướng
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTransactions();
+                
+                // Cập nhật style cho nút
+                this.style.opacity = currentPage === 1 ? '0.5' : '1';
+                this.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
             }
         });
 
-        // Kiểm tra đăng nhập khi tải trang
-        window.onload = checkLoginStatus;
+        document.getElementById('nextPage').addEventListener('click', function() {
+            const totalTransactions = userData.transactions.length;
+            const maxPage = Math.ceil(totalTransactions / itemsPerPage);
+            
+            if (currentPage < maxPage) {
+                currentPage++;
+                renderTransactions();
+                
+                // Cập nhật style cho nút
+                this.style.opacity = currentPage === maxPage ? '0.5' : '1';
+                this.style.cursor = currentPage === maxPage ? 'not-allowed' : 'pointer';
+            }
+        });
+
+        // Cập nhật hàm updatePaginationUI
+        function updatePaginationUI(totalItems) {
+            const maxPage = Math.ceil(totalItems / itemsPerPage);
+            document.getElementById('currentPage').textContent = `Trang ${currentPage} / ${maxPage}`;
+            
+            // Cập nhật style và trạng thái cho nút Previous
+            const prevButton = document.getElementById('prevPage');
+            prevButton.disabled = currentPage === 1;
+            prevButton.style.opacity = currentPage === 1 ? '0.5' : '1';
+            prevButton.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+            
+            // Cập nhật style và trạng thái cho nút Next
+            const nextButton = document.getElementById('nextPage');
+            nextButton.disabled = currentPage >= maxPage;
+            nextButton.style.opacity = currentPage >= maxPage ? '0.5' : '1';
+            nextButton.style.cursor = currentPage >= maxPage ? 'not-allowed' : 'pointer';
+        }
+
+        // Thêm CSS cho các nút điều hướng
+        const style = document.createElement('style');
+        style.textContent = `
+            .page-btn {
+                padding: 8px 16px;
+                margin: 0 5px;
+                border: 1px solid #ddd;
+                background-color: #f8f9fa;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .page-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .page-btn:not(:disabled):hover {
+                background-color: #e9ecef;
+                border-color: #dee2e6;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Cập nhật hàm addTransaction
+        function addTransaction(e) {
+            e.preventDefault();
+            
+            const newTransaction = {
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                category: document.getElementById('category').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                note: document.getElementById('note').value
+            };
+
+            userData.transactions.push(newTransaction);
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Trigger storage event để cập nhật trang chủ
+            window.dispatchEvent(new Event('storage'));
+            
+            renderTransactions();
+            e.target.reset();
+        }
+
+        // Cập nhật hàm deleteTransaction
+        function deleteTransaction(index) {
+            if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
+                userData.transactions.splice(index, 1);
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Trigger storage event để cập nhật trang chủ
+                window.dispatchEvent(new Event('storage'));
+                
+                renderTransactions();
+            }
+        }
+
+        // Cập nhật hàm saveEditTransaction
+        function saveEditTransaction(index) {
+            const transaction = {
+                date: document.getElementById('editDate').value,
+                type: document.getElementById('editType').value,
+                category: document.getElementById('editCategory').value,
+                amount: parseFloat(document.getElementById('editAmount').value),
+                note: document.getElementById('editNote').value
+            };
+
+            userData.transactions[index] = transaction;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Trigger storage event để cập nhật trang chủ
+            window.dispatchEvent(new Event('storage'));
+            
+            closeEditModal();
+            renderTransactions();
+        }
     </script>
 </body>
 </html> 
