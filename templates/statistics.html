@@ -226,18 +226,18 @@
         }
 
         .chart-section {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
 
         .chart-title {
@@ -251,10 +251,9 @@
         }
 
         .filter-select {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
+            padding: 8px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            border: 1px solid #ddd;
         }
 
         .chart-container {
@@ -270,7 +269,7 @@
 
         .expense-table th,
         .expense-table td {
-            padding: 1rem;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
@@ -284,22 +283,21 @@
         .category-name {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
 
         .category-icon {
-            width: 24px;
-            height: 24px;
-            background: #1877f2;
-            color: white;
+            width: 30px;
+            height: 30px;
+            background: #f0f2f5;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
         }
 
         .progress-bar {
+            width: 100%;
             height: 8px;
             background: #eee;
             border-radius: 4px;
@@ -308,7 +306,6 @@
 
         .progress {
             height: 100%;
-            background: #1877f2;
             border-radius: 4px;
             transition: width 0.3s ease;
         }
@@ -491,8 +488,7 @@
             <a href="./transaction.html" class="nav-item">Quản lý Giao dịch</a>
             <a href="./budget.html" class="nav-item">Quản lý Ngân sách</a>
             <a href="./statistics.html" class="nav-item">Báo cáo và Thống kê</a>
-            <a href="#" class="nav-item">Quản lý Tài khoản Ngân hàng</a>
-            <a href="#" class="nav-item">Cài đặt</a>
+            <a href="./settings.html" class="nav-item">Cài đặt</a>
         </div>
         
         <div class="nav-right" id="navRight">
@@ -545,6 +541,9 @@
                 <h2 class="chart-title">Thu nhập và Chi tiêu theo tháng</h2>
                 <div class="chart-filters">
                     <select class="filter-select" id="yearFilter">
+                        <option value="2027">2027</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
                         <option value="2024">2024</option>
                         <option value="2023">2023</option>
                     </select>
@@ -574,24 +573,22 @@
             <div class="chart-header">
                 <h2 class="chart-title">Chi tiết Chi tiêu theo Danh mục</h2>
                 <div class="chart-filters">
-                    <select class="filter-select" id="monthFilter">
-                        <!-- Will be populated with JavaScript -->
-                    </select>
+                    <select class="filter-select" id="monthFilter"></select>
                 </div>
             </div>
-            <table class="expense-table" id="categoryTable">
-                <thead>
-                    <tr>
-                        <th>Danh mục</th>
-                        <th>Số tiền</th>
-                        <th>% Ngân sách</th>
-                        <th>Tiến độ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Will be populated with JavaScript -->
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="expense-table" id="categoryTable">
+                    <thead>
+                        <tr>
+                            <th>Danh mục</th>
+                            <th>Số tiền</th>
+                            <th>% Ngân sách</th>
+                            <th>Tiến độ</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -718,52 +715,38 @@
 
         // Cập nhật hàm updateMonthlyChart
         function updateMonthlyChart(year, chart) {
-            console.log('Updating monthly chart for year:', year);
+            // Lấy dữ liệu từ userData thay vì trực tiếp từ localStorage
+            const userData = JSON.parse(localStorage.getItem('userData')) || { transactions: [] };
+            const transactions = userData.transactions;
+            
             const monthlyData = {
                 income: Array(12).fill(0),
                 expense: Array(12).fill(0)
             };
 
-            try {
-                const transactions = DataManager.transactions.getAll();
-                console.log('Retrieved transactions:', transactions);
-
-                if (!Array.isArray(transactions)) {
-                    throw new Error('Invalid transactions data format');
-                }
-
-                transactions.forEach(transaction => {
-                    if (!transaction.date || !transaction.amount || !transaction.type) {
-                        console.warn('Invalid transaction:', transaction);
-                        return;
+            transactions.forEach(transaction => {
+                const transactionDate = new Date(transaction.date);
+                if (transactionDate.getFullYear() === parseInt(year)) {
+                    const month = transactionDate.getMonth();
+                    const amount = parseFloat(transaction.amount);
+                    
+                    if (transaction.type === 'income') {
+                        monthlyData.income[month] += amount;
+                    } else if (transaction.type === 'expense') {
+                        monthlyData.expense[month] += Math.abs(amount);
                     }
-
-                    const transactionDate = new Date(transaction.date);
-                    if (transactionDate.getFullYear() === parseInt(year)) {
-                        const month = transactionDate.getMonth();
-                        const amount = parseFloat(transaction.amount) || 0;
-                        
-                        if (transaction.type === 'income') {
-                            monthlyData.income[month] += amount;
-                        } else if (transaction.type === 'expense') {
-                            monthlyData.expense[month] += amount;
-                        }
-                    }
-                });
-
-                if (validateChartData(monthlyData.income) && validateChartData(monthlyData.expense)) {
-                    chart.data.datasets[0].data = monthlyData.income;
-                    chart.data.datasets[1].data = monthlyData.expense;
-                    chart.update();
                 }
-            } catch (error) {
-                console.error('Error in updateMonthlyChart:', error);
-            }
+            });
+
+            chart.data.datasets[0].data = monthlyData.income;
+            chart.data.datasets[1].data = monthlyData.expense;
+            chart.update();
         }
 
         // Cập nhật hàm updateTrendChart
         function updateTrendChart(months, chart) {
-            const transactions = getTransactionData();
+            const userData = JSON.parse(localStorage.getItem('userData')) || { transactions: [] };
+            const transactions = userData.transactions;
             const today = new Date();
             const labels = [];
             const balanceData = [];
@@ -805,47 +788,89 @@
         }
 
         // Cập nhật hàm updateCategoryTable
-        function updateCategoryTable(month) {
-            console.log('Updating category table for month:', month);
-            
-            // Lấy dữ liệu
-            const expenses = DataManager.calculations.getCategoryExpenses(month);
-            const budgets = DataManager.budgets.getAll();
-            console.log('Category expenses:', expenses);
-            console.log('Budgets:', budgets);
+        function updateCategoryTable(selectedMonth) {
+            const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+            const categories = JSON.parse(localStorage.getItem('categories') || '{}');
+
+            // Tính toán chi tiêu theo danh mục
+            const categoryExpenses = transactions
+                .filter(t => t.type === 'expense' && t.date.startsWith(selectedMonth))
+                .reduce((acc, t) => {
+                    acc[t.category] = (acc[t.category] || 0) + Math.abs(parseFloat(t.amount));
+                    return acc;
+                }, {});
+
+            // Lấy ngân sách của tháng được chọn
+            const monthBudgets = budgets
+                .filter(b => b.month === selectedMonth)
+                .reduce((acc, b) => {
+                    acc[b.category] = parseFloat(b.amount);
+                    return acc;
+                }, {});
 
             // Cập nhật bảng
             const tbody = document.querySelector('#categoryTable tbody');
             tbody.innerHTML = '';
 
-            Object.entries(expenses)
-                .sort(([, a], [, b]) => b - a)
-                .forEach(([category, amount]) => {
-                    const budget = budgets.find(b => 
-                        b.category === category && 
-                        b.month === month
-                    );
-                    
+            // Lấy tất cả danh mục có trong chi tiêu hoặc ngân sách
+            const allCategories = [...new Set([
+                ...Object.keys(categoryExpenses),
+                ...Object.keys(monthBudgets)
+            ])];
+
+            // Sắp xếp danh mục theo số tiền chi tiêu (giảm dần)
+            allCategories
+                .sort((a, b) => (categoryExpenses[b] || 0) - (categoryExpenses[a] || 0))
+                .forEach(category => {
+                    const expense = categoryExpenses[category] || 0;
+                    const budget = monthBudgets[category] || 0;
+                    const percentage = budget ? (expense / budget) * 100 : 0;
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>
                             <div class="category-name">
                                 <div class="category-icon">
-                                    <i class="fas fa-${DataManager.categories.getIcon(category)}"></i>
+                                    <i class="fas fa-${getCategoryIcon(category)}"></i>
                                 </div>
-                                ${DataManager.categories.getName(category)}
+                                ${categories[category]?.name || category}
                             </div>
                         </td>
-                        <td>${formatCurrency(amount)}</td>
-                        <td>${budget ? ((amount / parseFloat(budget.amount)) * 100).toFixed(1) + '%' : 'N/A'}</td>
+                        <td>${formatCurrency(expense)}</td>
+                        <td>
+                            ${budget ? 
+                                `${percentage.toFixed(1)}% ${percentage > 100 ? '(Vượt ngân sách!)' : ''}` : 
+                                'Chưa có ngân sách'}
+                        </td>
                         <td>
                             <div class="progress-bar">
-                                <div class="progress" style="width: ${budget ? Math.min((amount / parseFloat(budget.amount)) * 100, 100) : 0}%"></div>
+                                <div class="progress" 
+                                     style="width: ${Math.min(percentage, 100)}%; 
+                                            background-color: ${percentage > 100 ? '#FF6384' : '#1877f2'}">
+                                </div>
                             </div>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
+        }
+
+        // Thêm hàm helper để lấy icon cho danh mục
+        function getCategoryIcon(category) {
+            const icons = {
+                food: 'utensils',
+                transport: 'car',
+                shopping: 'shopping-cart',
+                entertainment: 'film',
+                bills: 'file-invoice',
+                health: 'medkit',
+                education: 'graduation-cap',
+                housing: 'home',
+                investment: 'chart-line',
+                other: 'ellipsis-h'
+            };
+            return icons[category] || 'tag';
         }
 
         // Thêm event listener cho các thay đổi dữ liệu
@@ -966,6 +991,33 @@
             updateNavbar();
         });
 
+        function populateMonthFilter() {
+            const monthFilter = document.getElementById('monthFilter');
+            const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+            
+            // Lấy tất cả các tháng từ ngân sách
+            const months = [...new Set(budgets.map(b => b.month))];
+            months.sort((a, b) => b.localeCompare(a));
+
+            monthFilter.innerHTML = months.map(month => {
+                const date = new Date(month + '-01');
+                return `<option value="${month}">
+                    ${date.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                </option>`;
+            }).join('');
+
+            // Nếu không có tháng nào, thêm tháng hiện tại
+            if (months.length === 0) {
+                const currentDate = new Date();
+                const currentMonth = currentDate.toISOString().slice(0, 7);
+                monthFilter.innerHTML = `
+                    <option value="${currentMonth}">
+                        ${currentDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                    </option>
+                `;
+            }
+        }
+
         function initializeCharts() {
             console.log('Initializing charts...');
             
@@ -974,6 +1026,9 @@
             
             const monthlyChart = initMonthlyChart();
             const trendChart = initTrendChart();
+
+            // Populate month filter
+            populateMonthFilter();
 
             // Khởi tạo giá trị mặc định cho các filter
             const currentDate = new Date();
@@ -1039,6 +1094,21 @@
             
             return true;
         }
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'userData' || e.key === 'budgetData') {
+                const monthlyChart = Chart.getChart('monthlyChart');
+                const trendChart = Chart.getChart('trendChart');
+                const yearFilter = document.getElementById('yearFilter');
+                const monthFilter = document.getElementById('monthFilter');
+                
+                if (monthlyChart && trendChart) {
+                    updateMonthlyChart(yearFilter.value, monthlyChart);
+                    updateTrendChart(6, trendChart);
+                    updateCategoryTable(monthFilter.value);
+                }
+            }
+        });
     </script>
 </body>
 </html> 

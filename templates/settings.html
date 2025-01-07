@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="../js/dataManager.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        /* Copy navbar styles từ index.html */
+        .navbar {
+            background-color: #1877f2;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.15);
+        }
+
+        /* Settings specific styles */
+        .settings-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .settings-section h2 {
+            color: #1877f2;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .save-btn {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .save-btn:hover {
+            background-color: #1664d9;
+        }
+
+        /* Copy notification styles từ index.html */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.3rem;
+        }
+
+        /* Copy các styles khác từ index.html cho notifications và user info */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            color: white;
+            font-size: 1.1rem;
+            padding: 0.3rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 1px 5px;
+            font-size: 0.7rem;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 0.3rem;
+            margin-top: 0.3rem;
+            min-width: 120px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .logout-dropdown.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .logout-btn {
+            color: #333;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .register-btn {
+            background-color: white;
+            color: #1877f2;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .notification-icon:hover {
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 50%;
+        }
+        
+        .notification-list {
+            margin-top: 1rem;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-item i {
+            color: #ff4444;
+            font-size: 1.2rem;
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-weight: 500;
+            color: #ff000096;
+            text-shadow: 0 1px 2px rgba(255, 8, 8, 0.479);
+        }
+
+        .notification-content span {
+            color: #000000;
+            font-size: 0.9rem;
+        }
+
+        .notifications-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            width: 300px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .notifications-dropdown.active {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #202020;
+        }
+
+        .dropdown-notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dropdown-notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .dropdown-notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* ... (copy các styles liên quan từ index.html) ... */
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 1rem;
+            }
+            
+            .settings-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="nav-item">Trang chủ</a>
+            <a href="./transaction.html" class="nav-item">Quản lý Giao dịch</a>
+            <a href="./budget.html" class="nav-item">Quản lý Ngân sách</a>
+            <a href="./statistics.html" class="nav-item">Báo cáo và Thống kê</a>
+            <a href="./settings.html" class="nav-item">Cài đặt</a>
+        </div>
+        
+        <div class="nav-right" id="navRight">
+            <!-- Copy notification section từ index.html -->
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                    </div>
+                    <div class="dropdown-notification-list">
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Hóa đơn tiền điện sắp đến hạn</p>
+                                <span>Đến hạn trong 3 ngày</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-notification-item">
+                            <div class="notification-content">
+                                <p>Chi tiêu ăn uống vượt ngân sách</p>
+                                <span>Đã vượt 15% ngân sách tháng</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy auth buttons và user info từ index.html -->
+            <div class="auth-buttons" id="authButtons">
+                <a href="auth.html" class="auth-btn login-btn">Đăng nhập</a>
+                <a href="auth.html#register" class="auth-btn register-btn">Đăng ký</a>
+            </div>
+
+            <div class="user-info" id="userInfo" style="display: none;">
+                <div class="avatar-container">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" class="avatar" onclick="toggleLogout()">
+                    <div class="logout-dropdown" id="logoutDropdown">
+                        <a href="#" class="logout-btn" onclick="logout()">Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="settings-container">
+        <div class="settings-section">
+            <h2>Thông tin cá nhân</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="fullName">Họ và tên</label>
+                    <input type="text" id="fullName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-control" required>
+                </div>
+                <button type="submit" class="save-btn">Lưu thay đổi</button>
+            </form>
+        </div>
+
+        <div class="settings-section">
+            <h2>Cài đặt thông báo</h2>
+            <form id="notificationForm">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="emailNotifications"> Nhận thông báo qua email
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="budgetAlerts"> Cảnh báo khi vượt ngân sách
+                    </label>
+                </div>
+                <button type="submit" class="save-btn">Lưu cài đặt</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Copy các functions từ index.html
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                window.location.href = 'auth.html';
+            } else {
+                updateNavbar();
+                loadUserSettings();
+            }
+        }
+
+        function updateNavbar() {
+            const authButtons = document.getElementById('authButtons');
+            const userInfo = document.getElementById('userInfo');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            
+            if (isLoggedIn) {
+                authButtons.style.display = 'none';
+                userInfo.style.display = 'flex';
+            } else {
+                authButtons.style.display = 'flex';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            window.location.href = 'auth.html';
+        }
+
+        function toggleLogout() {
+            document.getElementById('logoutDropdown').classList.toggle('active');
+        }
+
+        function toggleNotifications() {
+            document.getElementById('notificationsDropdown').classList.toggle('active');
+        }
+
+        // Settings specific functions
+        function loadUserSettings() {
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            document.getElementById('fullName').value = userData.fullName || '';
+            document.getElementById('email').value = userData.email || '';
+            document.getElementById('emailNotifications').checked = userData.emailNotifications || false;
+            document.getElementById('budgetAlerts').checked = userData.budgetAlerts || false;
+        }
+
+        function saveUserSettings(event) {
+            event.preventDefault();
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            
+            userData.fullName = document.getElementById('fullName').value;
+            userData.email = document.getElementById('email').value;
+            userData.emailNotifications = document.getElementById('emailNotifications').checked;
+            userData.budgetAlerts = document.getElementById('budgetAlerts').checked;
+
+            localStorage.setItem('userData', JSON.stringify(userData));
+            alert('Cài đặt đã được lưu thành công!');
+        }
+
+        // Event listeners
+        document.getElementById('profileForm').addEventListener('submit', saveUserSettings);
+        document.getElementById('notificationForm').addEventListener('submit', saveUserSettings);
+
+        // Click outside to close dropdowns
+        document.addEventListener('click', (e) => {
+            const notificationIcon = document.querySelector('.notification-icon');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const avatar = document.querySelector('.avatar');
+            const logoutDropdown = document.getElementById('logoutDropdown');
+            
+            if (!notificationIcon.contains(e.target) && notificationsDropdown.classList.contains('active')) {
+                notificationsDropdown.classList.remove('active');
+            }
+            
+            if (!avatar.contains(e.target) && logoutDropdown.classList.contains('active')) {
+                logoutDropdown.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        window.onload = checkLoginStatus;
+    </script>
+</body>
+</html>
